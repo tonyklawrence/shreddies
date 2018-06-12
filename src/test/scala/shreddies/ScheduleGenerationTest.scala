@@ -3,6 +3,7 @@ package shreddies
 import java.time.temporal.ChronoUnit._
 import java.time.temporal.{Temporal, TemporalAdjuster, TemporalUnit}
 import java.time.{DayOfWeek, LocalDate}
+import SmartLocalDate._
 
 import org.scalatest.FunSuite
 
@@ -51,14 +52,6 @@ class ScheduleGenerationTest extends FunSuite {
     nextDate.`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) #:: from(nextDate)(amountToAdd, unit)
   }
 
-  implicit class SmartLocalDate(localDate: LocalDate) {
-    def plusBusinessDays(days: Long): LocalDate = days match {
-      case 0 => localDate
-      case n => localDate.plusDays(1).`with`(new WeekDayAdjuster).plusBusinessDays(n - 1)
-    }
-  }
-
-
   private val numberOfPeriods = tenorInMonths / autocallFrequency
 
   test("can generate an observation schedule") {
@@ -69,6 +62,16 @@ class ScheduleGenerationTest extends FunSuite {
   test("can generate a payment schedule") {
     val schedule = from(effectiveDate)(autocallFrequency, MONTHS).take(numberOfPeriods).toList
     assert(schedule == expectedPayments)
+  }
+}
+
+object SmartLocalDate {
+
+  implicit class SmartLocalDate(localDate: LocalDate) {
+    def plusBusinessDays(days: Long): LocalDate = days match {
+      case 0 => localDate
+      case n => localDate.plusDays(1).`with`(new WeekDayAdjuster).plusBusinessDays(n - 1)
+    }
   }
 }
 
@@ -94,6 +97,6 @@ class HolidayAdjuster extends TemporalAdjuster {
 
   override def adjustInto(input: Temporal): Temporal = {
     val date = LocalDate.from(input)
-    if (holidays.contains(date)) adjustInto(date.plusDays(1)) else date
+    if (holidays.contains(date)) adjustInto(date.plusBusinessDays(1)) else date
   }
 }
