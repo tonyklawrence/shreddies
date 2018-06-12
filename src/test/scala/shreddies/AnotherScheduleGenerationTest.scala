@@ -43,14 +43,15 @@ class AnotherScheduleGenerationTest extends FunSuite {
   }
 
   private val numberOfPeriods = tenorInMonths / autocallFrequency
+  private val everySixMonthsFrom = every(autocallFrequency, MONTHS)_
 
   test("can generate an observation schedule") {
-    val schedule = from(tradeDate)(autocallFrequency, MONTHS).take(numberOfPeriods).toList
+    val schedule = everySixMonthsFrom(tradeDate).take(numberOfPeriods).toList
     assert(schedule == expectedObservations)
   }
 
   test("can generate a payment schedule") {
-    val schedule = from(unadjustedEffectiveDate)(autocallFrequency, MONTHS).take(numberOfPeriods).toList
+    val schedule = everySixMonthsFrom(unadjustedEffectiveDate).take(numberOfPeriods).toList
     assert(schedule == expectedPayments)
   }
 }

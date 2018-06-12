@@ -10,15 +10,15 @@ object ScheduleGenerator {
 
   implicit def dateSmarts(date: LocalDate): SmartLocalDate = new SmartLocalDate(date)
 
-  def from(startDate: LocalDate)(amountToAdd: Long, unit: TemporalUnit): Stream[LocalDate] = {
+  def every(amountToAdd: Long, unit: TemporalUnit)(startDate: LocalDate): Stream[LocalDate] = {
     val nextDate = startDate.plus(amountToAdd, unit)
-    nextDate.`with`(weekdays).`with`(holidays) #:: from(nextDate)(amountToAdd, unit)
+    nextDate.`with`(weekdays).`with`(holidays) #:: every(amountToAdd, unit)(nextDate)
   }
 
-  class SmartLocalDate(localDate: LocalDate) {
+  class SmartLocalDate(date: LocalDate) {
     def plusBusinessDays(days: Long): LocalDate = days match {
-      case 0 => localDate
-      case n => localDate.plusDays(1).`with`(weekdays).`with`(holidays).plusBusinessDays(n - 1)
+      case 0 => date
+      case n => date.plusDays(1).`with`(weekdays).`with`(holidays).plusBusinessDays(n - 1)
     }
   }
 
