@@ -8,7 +8,10 @@ object Implicits {
   class SmartLocalDate(localDate: LocalDate) {
     def plusBusinessDays(days: Long): LocalDate = days match {
       case 0 => localDate
-      case n => localDate.plusDays(1).`with`(new WeekDayAdjuster).plusBusinessDays(n - 1)
+      case n => localDate.plusDays(1).
+        `with`(new WeekDayAdjuster).
+        `with`(new HolidayAdjuster).
+        plusBusinessDays(n - 1)
     }
   }
 }
