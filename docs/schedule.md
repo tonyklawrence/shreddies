@@ -41,3 +41,40 @@
 * Maturity date
 * Trade date
 * Valudation date (final?)
+
+### Example
+
+* Trade date = 15 June 2018
+* Tenor = 36 months
+* Autocall frequency = 6 months
+* Coupon frequency = 6 months
+* Non-call periods = 0
+* Memory coupon = false
+
+#### Output
+
+Business Day convention = Following
+Calendars for payments = NYC, LDN
+
+Strike date     = 15 June 2018
+Trade date      = 29 June 2018 (+ 14 days, + 10 business days)
+Issue date      = 29 June 2018 (same)
+Settlement date = 29 June 2018 (same)
+Final Valuation = 15 June 2021 (+ 3 years)
+Maturity date   = 29 June 2021 (Trade/Issue/Settlement + 3 years)
+
+Autocall schedule = 
+    17 Dec 2018     02 Jan 2019
+    17 Jun 2019     01 Jul 2019
+    16 Dec 2019     30 Dec 2019
+    15 Jun 2020     29 Jun 2020
+    15 Dec 2020     29 Dec 2020
+    15 Jun 2021     29 Jun 2021
+    
+Coupon schedule =
+    17 Dec 2018     02 Jan 2019
+    17 Jun 2019     01 Jul 2019
+    16 Dec 2019     30 Dec 2019
+    15 Jun 2020     29 Jun 2020
+    15 Dec 2020     29 Dec 2020
+    15 Jun 2021     29 Jun 2021
