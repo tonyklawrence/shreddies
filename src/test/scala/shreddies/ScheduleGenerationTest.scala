@@ -2,10 +2,9 @@ package shreddies
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit._
-import java.time.temporal.TemporalUnit
 
 import org.scalatest.FunSuite
-import shreddies.Implicits._
+import shreddies.ScheduleGenerator._
 
 class ScheduleGenerationTest extends FunSuite {
   private val strikeDate = LocalDate.of(2018, 6, 15)
@@ -38,18 +37,13 @@ class ScheduleGenerationTest extends FunSuite {
     val saturday = LocalDate.of(2018, 6, 16)
     val monday = LocalDate.of(2018, 6, 18)
 
-    assert(saturday.`with`(new WeekDayAdjuster) == monday)
+    assert(saturday.`with`(weekdays) == monday)
   }
 
   test("can calculate dates") {
-    assert(strikeDate.plusBusinessDays(10).`with`(new HolidayAdjuster) == effectiveDate)
-    assert(strikeDate.plusMonths(tenorInMonths).`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) == finalValuation)
-    assert(effectiveDate.plusMonths(tenorInMonths).`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) == maturityDate)
-  }
-
-  private def from(startDate: LocalDate)(amountToAdd: Long, unit: TemporalUnit): Stream[LocalDate] = {
-    val nextDate = startDate.plus(amountToAdd, unit)
-    nextDate.`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) #:: from(nextDate)(amountToAdd, unit)
+    assert(strikeDate.plusBusinessDays(10).`with`(holidays) == effectiveDate)
+    assert(strikeDate.plusMonths(tenorInMonths).`with`(weekdays).`with`(holidays) == finalValuation)
+    assert(effectiveDate.plusMonths(tenorInMonths).`with`(weekdays).`with`(holidays) == maturityDate)
   }
 
   private val numberOfPeriods = tenorInMonths / autocallFrequency

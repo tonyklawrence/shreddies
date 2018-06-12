@@ -2,10 +2,9 @@ package shreddies
 
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit._
-import java.time.temporal.TemporalUnit
 
 import org.scalatest.FunSuite
-import shreddies.Implicits._
+import shreddies.ScheduleGenerator._
 
 class AndAnotherScheduleGenerationTest extends FunSuite {
   private val tradeDate = LocalDate.of(2018, 1, 9) // strike / pricing
@@ -83,14 +82,9 @@ class AndAnotherScheduleGenerationTest extends FunSuite {
   )
 
   test("can calculate dates") {
-    assert(tradeDate.plusBusinessDays(10).`with`(new HolidayAdjuster) == effectiveDate)
-    assert(tradeDate.plusMonths(tenorInMonths).`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) == finalValuation)
-    assert(effectiveDate.plusMonths(tenorInMonths).`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) == maturityDate)
-  }
-
-  private def from(startDate: LocalDate)(amountToAdd: Long, unit: TemporalUnit): Stream[LocalDate] = {
-    val nextDate = startDate.plus(amountToAdd, unit)
-    nextDate.`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) #:: from(nextDate)(amountToAdd, unit)
+    assert(tradeDate.plusBusinessDays(10).`with`(holidays) == effectiveDate)
+    assert(tradeDate.plusMonths(tenorInMonths).`with`(weekdays).`with`(holidays) == finalValuation)
+    assert(effectiveDate.plusMonths(tenorInMonths).`with`(weekdays).`with`(holidays) == maturityDate)
   }
 
   private val numberOfPeriods = tenorInMonths / autocallFrequency
