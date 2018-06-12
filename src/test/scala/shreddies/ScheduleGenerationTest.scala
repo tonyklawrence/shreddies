@@ -1,7 +1,7 @@
 package shreddies
 
 import java.time.temporal.ChronoUnit._
-import java.time.temporal.{Temporal, TemporalAdjuster}
+import java.time.temporal.{Temporal, TemporalAdjuster, TemporalUnit}
 import java.time.{DayOfWeek, LocalDate}
 
 import org.scalatest.FunSuite
@@ -9,6 +9,11 @@ import org.scalatest.FunSuite
 class ScheduleGenerationTest extends FunSuite {
   private val strikeDate = LocalDate.of(2018, 6, 15)
   private val effectiveDate = LocalDate.of(2018, 6, 29)
+  private val finalValuation = LocalDate.of(2021, 6, 15)
+  private val maturityDate = LocalDate.of(2021, 6, 29)
+
+  private val tenorInMonths = 36
+  private val autocallFrequency = 6
 
   private val expectedObservations = List(
     LocalDate.of(2018,12,17),
@@ -29,37 +34,40 @@ class ScheduleGenerationTest extends FunSuite {
   )
 
   test("can roll a date") {
-    val expectedDate = LocalDate.of(2018, 12, 17) // Monday after
-    val strikeDate = LocalDate.of(2018, 6, 15) // Friday
+    val saturday = LocalDate.of(2018, 6, 16)
+    val monday = LocalDate.of(2018, 6, 18)
 
-    val addedTenor = strikeDate.plus(6, MONTHS) // Saturday
-    val rollWeekend = addedTenor.`with`(new WeekDayAdjuster)
-
-    assert(rollWeekend == expectedDate)
+    assert(saturday.`with`(new WeekDayAdjuster) == monday)
   }
 
-  test("can roll another date") {
-    val expectedDate = LocalDate.of(2019, 6, 17)
-    val strikeDate = LocalDate.of(2018, 12, 17)
-
-    val addedTenor = strikeDate.plus(6, MONTHS)
-    val rollWeekend = addedTenor.`with`(new WeekDayAdjuster)
-
-    assert(rollWeekend == expectedDate)
+  test("can calculate dates") {
+    assert(strikeDate.plusBusinessDays(10).`with`(new HolidayAdjuster) == effectiveDate)
+    assert(strikeDate.plusMonths(tenorInMonths).`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) == finalValuation)
+    assert(effectiveDate.plusMonths(tenorInMonths).`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) == maturityDate)
   }
 
-  def from(startDate: LocalDate): Stream[LocalDate] = {
-    val nextDate = startDate.plus(6, MONTHS)
-    from(nextDate).#::(nextDate.`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster))
+  private def from(startDate: LocalDate)(amountToAdd: Long, unit: TemporalUnit): Stream[LocalDate] = {
+    val nextDate = startDate.plus(amountToAdd, unit)
+    nextDate.`with`(new WeekDayAdjuster).`with`(new HolidayAdjuster) #:: from(nextDate)(amountToAdd, unit)
   }
+
+  implicit class SmartLocalDate(localDate: LocalDate) {
+    def plusBusinessDays(days: Long): LocalDate = days match {
+      case 0 => localDate
+      case n => localDate.plusDays(1).`with`(new WeekDayAdjuster).plusBusinessDays(n - 1)
+    }
+  }
+
+
+  private val numberOfPeriods = tenorInMonths / autocallFrequency
 
   test("can generate an observation schedule") {
-    val schedule = from(strikeDate).take(6).toList
+    val schedule = from(strikeDate)(autocallFrequency, MONTHS).take(numberOfPeriods).toList
     assert(schedule == expectedObservations)
   }
 
   test("can generate a payment schedule") {
-    val schedule = from(effectiveDate).take(6).toList
+    val schedule = from(effectiveDate)(autocallFrequency, MONTHS).take(numberOfPeriods).toList
     assert(schedule == expectedPayments)
   }
 }
@@ -81,7 +89,6 @@ class HolidayAdjuster extends TemporalAdjuster {
     LocalDate.of(2018, 12, 31),       // UK - New Years Eve
     LocalDate.of(2019, 1, 1),         // UK - New Years Day
     LocalDate.of(2019, 12, 17),       // NY - Pan American Aviation Day
-//    LocalDate.of(2019, 9, 2),         // NY - Labour Day
     LocalDate.of(2020, 8, 31)         // UK - Bank holiday
   )
 
