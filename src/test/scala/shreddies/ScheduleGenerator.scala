@@ -1,6 +1,7 @@
 package shreddies
 
-import java.time.{DayOfWeek, LocalDate}
+import java.time.DayOfWeek.{SATURDAY, SUNDAY}
+import java.time.LocalDate
 import java.time.temporal.{Temporal, TemporalAdjuster, TemporalUnit}
 
 object ScheduleGenerator {
@@ -26,9 +27,9 @@ object ScheduleGenerator {
       val date = LocalDate.from(input)
 
       date.getDayOfWeek match {
-        case DayOfWeek.SATURDAY => date.plusDays(2)
-        case DayOfWeek.SUNDAY => date.plusDays(1)
-        case _ => date
+        case SATURDAY => date.plusDays(2)
+        case SUNDAY   => date.plusDays(1)
+        case _        => date
       }
     }
   }
@@ -39,8 +40,7 @@ object ScheduleGenerator {
       LocalDate.of(2018, 2, 19),        // NY - Washington's Birthday
       LocalDate.of(2018, 12, 31),       // UK - New Years Eve
       LocalDate.of(2019, 1, 1),         // UK - New Years Day
-      LocalDate.of(2019, 12, 17),       // NY - Pan American Aviation Day
-      LocalDate.of(2020, 8, 31),        // UK - Bank holiday
+      LocalDate.of(2020, 8, 31),        // UK - August Bank holiday
       LocalDate.of(2023, 4, 10)         // UK - Easter Monday
     )
 
