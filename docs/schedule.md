@@ -57,7 +57,7 @@ Business Day convention = Following
 Calendars for payments = NYC, LDN
 
 Strike date     = 15 June 2018
-Trade date      = 29 June 2018 (+ 14 days, + 10 business days)
+Trade date      = 29 June 2018 (+ 10 business days - issue delay?)
 Issue date      = 29 June 2018 (same)
 Settlement date = 29 June 2018 (same)
 Final Valuation = 15 June 2021 (+ 3 years)
